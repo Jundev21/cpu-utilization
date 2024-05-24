@@ -1,5 +1,6 @@
 package com.international.cpuutilization.domain.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -8,9 +9,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
+import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
+import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.entity.CpuUtilizationEntity;
 import com.international.cpuutilization.domain.repository.CpuUtilizationRepository;
 import com.international.cpuutilization.util.CpuInfo;
+import com.querydsl.core.Tuple;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,19 +24,18 @@ import lombok.RequiredArgsConstructor;
 public class CpuUtilService {
 	private final CpuUtilizationRepository cpuUtilizationRepository;
 	private final CpuInfo cpuInfo;
-	public List<CpuUtilizationEntity> searchCpuUtilByMin(
+	public List<SearchMinuteResponse> searchCpuUtilByMin(
 		LocalDateTime startDate, LocalDateTime endDate
 	) {
-		return cpuUtilizationRepository.findAllByCreatedDateBetween(startDate,endDate);
+		return cpuUtilizationRepository.searchMinData(startDate, endDate);
 	}
 
-	public List<CpuUtilizationEntity> searchCpuUtilByDay(LocalDateTime pickedDay) {
-
-		return null;
+	public List<SearchHourResponse> searchCpuUtilByDay(LocalDateTime pickedDay) {
+		return cpuUtilizationRepository.searchHourData(pickedDay);
 	}
 
-	public List<CpuUtilizationEntity> searchCpuByDays(LocalDateTime startDate, LocalDateTime endDate) {
-		return null;
+	public List<SearchDateResponse> searchCpuByDays(LocalDateTime startDate, LocalDateTime endDate) {
+		return cpuUtilizationRepository.searchDateData(startDate,endDate);
 	}
 
 	@Transactional
