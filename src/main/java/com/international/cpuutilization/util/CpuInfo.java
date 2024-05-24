@@ -14,7 +14,7 @@ public class CpuInfo {
 	// 0 일 경우는 사요량이 0 이고 100 일경우는 1로 나타낸다. 따라서
 	// cpu 사용량은 퍼센테이지로 나타내기 때문에 *100 을 해서 퍼센테이지로 나타낸다
 	public double getCpuUsage() {
-		return Math.floor(this.operatingSystemMXBean.getCpuLoad()*100/100.0);
+		return this.operatingSystemMXBean.getCpuLoad()*100;
 	}
 	public double getJvmUsage() {
 		return this.operatingSystemMXBean.getProcessCpuLoad()*100;
