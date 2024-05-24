@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class CpuUtilizationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long rowId;
+	private long cpuId;
 	private double cpuUtilization;
 	@CreatedDate
 	private LocalDateTime createdDate;
