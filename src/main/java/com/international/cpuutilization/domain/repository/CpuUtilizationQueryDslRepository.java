@@ -1,5 +1,6 @@
 package com.international.cpuutilization.domain.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,6 +11,6 @@ import com.querydsl.core.Tuple;
 
 public interface CpuUtilizationQueryDslRepository {
 	List<SearchMinuteResponse> searchMinData(LocalDateTime startDate, LocalDateTime endDate);
-	List<SearchHourResponse> searchHourData(LocalDateTime pickedDay);
+	List<SearchHourResponse> searchHourData(LocalDate pickedDay);
 	List<SearchDateResponse> searchDateData(LocalDateTime startDate, LocalDateTime endDate);
 }
