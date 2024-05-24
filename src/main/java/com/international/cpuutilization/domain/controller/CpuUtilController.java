@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
 import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
-import com.international.cpuutilization.domain.entity.CpuUtilizationEntity;
 import com.international.cpuutilization.domain.service.CpuUtilService;
 
 import lombok.AllArgsConstructor;
@@ -27,29 +26,29 @@ public class CpuUtilController {
 
 	@GetMapping("/min")
 	public ResponseEntity<List<SearchMinuteResponse>> searchCpuUtilByMin(
-		@RequestParam     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		LocalDateTime startDate,
-		@RequestParam     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		LocalDateTime endDate
 	) {
-	return ResponseEntity.ok(cpuUtilService.searchCpuUtilByMin(startDate,endDate));
+		return ResponseEntity.ok(cpuUtilService.searchCpuUtilByMin(startDate, endDate));
 	}
 
 	@GetMapping("/hour")
 	public ResponseEntity<List<SearchHourResponse>> searchCpuUtilByHour(
-		@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
 		LocalDate pickedDay
 	) {
-		return ResponseEntity.ok(cpuUtilService.searchCpuUtilByDay(pickedDay));
+		return ResponseEntity.ok(cpuUtilService.searchCpuUtilByHour(pickedDay));
 	}
 
 	@GetMapping("/day")
 	public ResponseEntity<List<SearchDateResponse>> searchCpuUtilByDays(
-		@RequestParam     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-		LocalDateTime startDate,
-		@RequestParam     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-		LocalDateTime endDate
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
+		LocalDate startDate,
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
+		LocalDate endDate
 	) {
-		return ResponseEntity.ok(cpuUtilService.searchCpuByDays(startDate,endDate));
+		return ResponseEntity.ok(cpuUtilService.searchCpuUilByDay(startDate, endDate));
 	}
 }

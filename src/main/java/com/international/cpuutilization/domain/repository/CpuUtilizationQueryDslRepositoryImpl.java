@@ -2,16 +2,16 @@ package com.international.cpuutilization.domain.repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
-import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
-import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
+import com.international.cpuutilization.domain.dto.QueryDto.SearchDayQueryDto;
+import com.international.cpuutilization.domain.dto.QueryDto.SearchHourQueryDto;
+import com.international.cpuutilization.domain.dto.QueryDto.SearchMinuteQueryDto;
 import com.international.cpuutilization.domain.entity.QCpuUtilizationEntity;
-import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -25,163 +25,235 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 	private final QueryDslExpressions queryDslExpressions;
 
 	@Override
-	public List<SearchMinuteResponse> searchMinData(LocalDateTime startDate, LocalDateTime endDate) {
-
-		List<SearchMinuteResponse> result = new ArrayList<>();
-
-		List<Tuple> searchData = jpaQueryFactory.select(
-				cpuEntity.createdDate,
+	public List<SearchMinuteQueryDto> searchMinData(LocalDateTime startDate, LocalDateTime endDate) {
+		return jpaQueryFactory.select(
+				Projections.fields(
+					SearchMinuteQueryDto.class,
+					queryDslExpressions.getYearPath().as("year"),
+					queryDslExpressions.getMonthPath().as("month"),
+					queryDslExpressions.getDayPath().as("day"),
+					queryDslExpressions.getHourPath().as("hour"),
+					queryDslExpressions.getMinutePath().as("minute"),
+					cpuEntity.cpuUtilization))
+			.from(cpuEntity)
+			.where(cpuEntity.createdDate.between(startDate, endDate))
+			.groupBy(
+				queryDslExpressions.getYearPath(),
+				queryDslExpressions.getMonthPath(),
+				queryDslExpressions.getDayPath(),
 				queryDslExpressions.getHourPath(),
 				queryDslExpressions.getMinutePath(),
 				cpuEntity.cpuUtilization
 			)
-			.from(cpuEntity)
-			.where(cpuEntity.createdDate.between(startDate, endDate))
 			.fetch();
-
-		for (int i = 0; i < 60; i++) {
-			boolean hasMinuteData = false;
-			for (Tuple tuple : searchData) {
-				Integer getMinute = tuple.get(queryDslExpressions.getMinutePath());
-				Double getCpuUtilization = tuple.get(cpuEntity.cpuUtilization);
-
-				if (getMinute != null && getCpuUtilization != null && getMinute == i) {
-					SearchMinuteResponse newData = SearchMinuteResponse.builder()
-						.dateTime(tuple.get(cpuEntity.createdDate).format(queryDslExpressions.getDtf()))
-						.minutes(getMinute)
-						.currHours(getMinute)
-						.currMinutes(i)
-						.cpuUtilization(getCpuUtilization)
-						.build();
-					hasMinuteData = true;
-					result.add(newData);
-				}
-			}
-			if (!hasMinuteData) {
-				SearchMinuteResponse newData = SearchMinuteResponse.builder()
-					.dateTime("not exist")
-					.minutes(0)
-					.currHours(0)
-					.currMinutes(i)
-					.cpuUtilization(0.0)
-					.build();
-				result.add(newData);
-			}
-		}
-		return result;
 	}
 
 	@Override
-	public List<SearchHourResponse> searchHourData(LocalDate pickedDay) {
-		List<SearchHourResponse> result = new ArrayList<>();
-		List<Tuple> subResult = jpaQueryFactory.select(
-				queryDslExpressions.getHourPath(),
-				cpuEntity.cpuUtilization.min(),
-				cpuEntity.cpuUtilization.max(),
-				cpuEntity.cpuUtilization.avg()
+	public List<SearchHourQueryDto> searchHourData(LocalDate pickedDay) {
+		return jpaQueryFactory.select(
+				Projections.fields(
+					SearchHourQueryDto.class,
+					queryDslExpressions.getYearPath().as("year"),
+					queryDslExpressions.getMonthPath().as("month"),
+					queryDslExpressions.getDayPath().as("day"),
+					queryDslExpressions.getHourPath().as("hour"),
+					cpuEntity.cpuUtilization.min().as("min"),
+					cpuEntity.cpuUtilization.max().as("max"),
+					cpuEntity.cpuUtilization.avg().as("avg")
+				))
+			.from(cpuEntity)
+			.where(queryDslExpressions.getYearPath().eq(pickedDay.getYear()),
+				queryDslExpressions.getMonthPath().eq(pickedDay.getMonthValue()),
+				queryDslExpressions.getDayPath().eq(pickedDay.getDayOfMonth())
 			)
-			.from(cpuEntity)
-			.where(queryDslExpressions.getDatePath().eq(pickedDay))
-			.groupBy(queryDslExpressions.getHourPath())
-			.fetch();
-
-		for (int i = 0; i < 24; i++) {
-			boolean hasHourData = false;
-			for (Tuple tuple : subResult) {
-				Double min = tuple.get(cpuEntity.cpuUtilization.min());
-				Double max = tuple.get(cpuEntity.cpuUtilization.max());
-				Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
-				Integer getHour = tuple.get(queryDslExpressions.getHourPath());
-
-				if (min != null && max != null && avg != null && getHour != null && getHour == i) {
-					SearchHourResponse newData = SearchHourResponse.builder()
-						.dateTime(pickedDay.format(queryDslExpressions.getDt()))
-						.currentHour(getHour)
-						.countHour(i)
-						.minimumUtilization(min)
-						.maximumUtilization(max)
-						.averageUtilization(avg)
-						.build();
-					hasHourData = true;
-					result.add(newData);
-				}
-			}
-			if (!hasHourData) {
-				SearchHourResponse nonData = SearchHourResponse.builder()
-					.dateTime(pickedDay.format(queryDslExpressions.getDt()))
-					.currentHour(0)
-					.countHour(i)
-					.minimumUtilization(0.0)
-					.maximumUtilization(0.0)
-					.averageUtilization(0.0)
-					.build();
-				result.add(nonData);
-			}
-		}
-		return result;
-	}
-
-	@Override
-	public List<SearchDateResponse> searchDateData(LocalDateTime startDate, LocalDateTime endDate) {
-
-		List<SearchDateResponse> result = new ArrayList<>();
-
-		List<Tuple> searchData = jpaQueryFactory.select(
+			.groupBy(
 				queryDslExpressions.getYearPath(),
 				queryDslExpressions.getMonthPath(),
 				queryDslExpressions.getDayPath(),
-				cpuEntity.cpuUtilization.min(),
-				cpuEntity.cpuUtilization.max(),
-				cpuEntity.cpuUtilization.avg()
-			)
-			.from(cpuEntity)
-			.where(cpuEntity.createdDate.between(startDate, endDate))
-			.groupBy(queryDslExpressions.getYearPath(), queryDslExpressions.getMonthPath(),
-				queryDslExpressions.getDayPath())
+				queryDslExpressions.getHourPath())
 			.fetch();
-
-		LocalDate copyStartDate = startDate.toLocalDate();;
-		LocalDate copyEndDate = endDate.toLocalDate();;
-
-		while (copyStartDate.compareTo(copyEndDate) < 1) {
-			boolean hasDayData = false;
-
-			for (Tuple tuple : searchData) {
-				Double min = tuple.get(cpuEntity.cpuUtilization.min());
-				Double max = tuple.get(cpuEntity.cpuUtilization.max());
-				Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
-
-				LocalDate localDateFomatted = LocalDate.of(
-					tuple.get(queryDslExpressions.getYearPath()),
-					tuple.get(queryDslExpressions.getMonthPath()),
-					tuple.get(queryDslExpressions.getDayPath()));
-
-				if (min != null && max != null && avg != null && copyStartDate.isEqual(localDateFomatted)) {
-					SearchDateResponse newData = SearchDateResponse.builder()
-						.dateTime(localDateFomatted.format(queryDslExpressions.getDt()))
-						.minimumUtilization(min)
-						.maximumUtilization(max)
-						.averageUtilization(avg)
-						.build();
-					hasDayData=true;
-					result.add(newData);
-				}
-			}
-
-			if (!hasDayData) {
-				SearchDateResponse nonData = SearchDateResponse.builder()
-					.dateTime(copyStartDate.format(queryDslExpressions.getDt()))
-					.minimumUtilization(0.0)
-					.maximumUtilization(0.0)
-					.averageUtilization(0.0)
-					.build();
-				result.add(nonData);
-			}
-			copyStartDate = copyStartDate.plusDays(1);
-		}
-
-		return result;
 	}
+
+	@Override
+	public List<SearchDayQueryDto> searchDateData(LocalDate startDate, LocalDate endDate) {
+		return jpaQueryFactory.select(
+				Projections.fields(
+					SearchDayQueryDto.class,
+					queryDslExpressions.getYearPath().as("year"),
+					queryDslExpressions.getMonthPath().as("month"),
+					queryDslExpressions.getDayPath().as("day"),
+					cpuEntity.cpuUtilization.min().as("min"),
+					cpuEntity.cpuUtilization.max().as("max"),
+					cpuEntity.cpuUtilization.avg().as("avg")
+				))
+			.from(cpuEntity)
+			.where(cpuEntity.createdDate.between(startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)))
+			.groupBy(
+				queryDslExpressions.getYearPath(),
+				queryDslExpressions.getMonthPath(),
+				queryDslExpressions.getDayPath()
+			)
+			.fetch();
+	}
+
+	// @Override
+	// public List<SearchMinuteResponse> searchMinData(LocalDateTime startDate, LocalDateTime endDate) {
+	//
+	//
+	//
+	// 	List<Tuple> searchData = jpaQueryFactory.select(
+	// 			cpuEntity.createdDate,
+	// 			queryDslExpressions.getHourPath(),
+	// 			queryDslExpressions.getMinutePath(),
+	// 			cpuEntity.cpuUtilization
+	// 		)
+	// 		.from(cpuEntity)
+	// 		.where(cpuEntity.createdDate.between(startDate, endDate))
+	// 		.fetch();
+	//
+	// 	for (int i = 0; i < 60; i++) {
+	// 		boolean hasMinuteData = false;
+	// 		for (Tuple tuple : searchData) {
+	// 			Integer getMinute = tuple.get(queryDslExpressions.getMinutePath());
+	// 			Double getCpuUtilization = tuple.get(cpuEntity.cpuUtilization);
+	//
+	// 			if (getMinute != null && getCpuUtilization != null && getMinute == i) {
+	// 				SearchMinuteResponse newData = SearchMinuteResponse.builder()
+	// 					.dateTime(tuple.get(cpuEntity.createdDate).format(queryDslExpressions.getDtf()))
+	// 					.minutes(getMinute)
+	// 					.currHours(getMinute)
+	// 					.currMinutes(i)
+	// 					.cpuUtilization(getCpuUtilization)
+	// 					.build();
+	// 				hasMinuteData = true;
+	// 				result.add(newData);
+	// 			}
+	// 		}
+	// 		if (!hasMinuteData) {
+	// 			SearchMinuteResponse newData = SearchMinuteResponse.builder()
+	// 				.dateTime("not exist")
+	// 				.minutes(0)
+	// 				.currHours(0)
+	// 				.currMinutes(i)
+	// 				.cpuUtilization(0.0)
+	// 				.build();
+	// 			result.add(newData);
+	// 		}
+	// 	}
+	// 	return result;
+	// }
+
+	// @Override
+	// public List<SearchHourResponse> searchHourData(LocalDate pickedDay) {
+	// 	List<SearchHourResponse> result = new ArrayList<>();
+	// 	List<Tuple> subResult = jpaQueryFactory.select(
+	// 			queryDslExpressions.getHourPath(),
+	// 			cpuEntity.cpuUtilization.min(),
+	// 			cpuEntity.cpuUtilization.max(),
+	// 			cpuEntity.cpuUtilization.avg()
+	// 		)
+	// 		.from(cpuEntity)
+	// 		.where(queryDslExpressions.getDatePath().eq(pickedDay))
+	// 		.groupBy(queryDslExpressions.getHourPath())
+	// 		.fetch();
+	//
+	// 	for (int i = 0; i < 24; i++) {
+	// 		boolean hasHourData = false;
+	// 		for (Tuple tuple : subResult) {
+	// 			Double min = tuple.get(cpuEntity.cpuUtilization.min());
+	// 			Double max = tuple.get(cpuEntity.cpuUtilization.max());
+	// 			Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
+	// 			Integer getHour = tuple.get(queryDslExpressions.getHourPath());
+	//
+	// 			if (min != null && max != null && avg != null && getHour != null && getHour == i) {
+	// 				SearchHourResponse newData = SearchHourResponse.builder()
+	// 					.dateTime(pickedDay.format(queryDslExpressions.getDt()))
+	// 					.currentHour(getHour)
+	// 					.countHour(i)
+	// 					.minimumUtilization(min)
+	// 					.maximumUtilization(max)
+	// 					.averageUtilization(avg)
+	// 					.build();
+	// 				hasHourData = true;
+	// 				result.add(newData);
+	// 			}
+	// 		}
+	// 		if (!hasHourData) {
+	// 			SearchHourResponse nonData = SearchHourResponse.builder()
+	// 				.dateTime(pickedDay.format(queryDslExpressions.getDt()))
+	// 				.currentHour(0)
+	// 				.countHour(i)
+	// 				.minimumUtilization(0.0)
+	// 				.maximumUtilization(0.0)
+	// 				.averageUtilization(0.0)
+	// 				.build();
+	// 			result.add(nonData);
+	// 		}
+	// 	}
+	// 	return result;
+	// }
+
+	// @Override
+	// public List<SearchDateResponse> searchDateData(LocalDateTime startDate, LocalDateTime endDate) {
+	//
+	// 	List<SearchDateResponse> result = new ArrayList<>();
+	//
+	// 	List<Tuple> searchData = jpaQueryFactory.select(
+	// 			queryDslExpressions.getYearPath(),
+	// 			queryDslExpressions.getMonthPath(),
+	// 			queryDslExpressions.getDayPath(),
+	// 			cpuEntity.cpuUtilization.min(),
+	// 			cpuEntity.cpuUtilization.max(),
+	// 			cpuEntity.cpuUtilization.avg()
+	// 		)
+	// 		.from(cpuEntity)
+	// 		.where(cpuEntity.createdDate.between(startDate, endDate))
+	// 		.groupBy(queryDslExpressions.getYearPath(), queryDslExpressions.getMonthPath(),
+	// 			queryDslExpressions.getDayPath())
+	// 		.fetch();
+	//
+	// 	LocalDate copyStartDate = startDate.toLocalDate();;
+	// 	LocalDate copyEndDate = endDate.toLocalDate();;
+	//
+	// 	while (copyStartDate.compareTo(copyEndDate) < 1) {
+	// 		boolean hasDayData = false;
+	//
+	// 		for (Tuple tuple : searchData) {
+	// 			Double min = tuple.get(cpuEntity.cpuUtilization.min());
+	// 			Double max = tuple.get(cpuEntity.cpuUtilization.max());
+	// 			Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
+	//
+	// 			LocalDate localDateFomatted = LocalDate.of(
+	// 				tuple.get(queryDslExpressions.getYearPath()),
+	// 				tuple.get(queryDslExpressions.getMonthPath()),
+	// 				tuple.get(queryDslExpressions.getDayPath()));
+	//
+	// 			if (min != null && max != null && avg != null && copyStartDate.isEqual(localDateFomatted)) {
+	// 				SearchDateResponse newData = SearchDateResponse.builder()
+	// 					.dateTime(localDateFomatted.format(queryDslExpressions.getDt()))
+	// 					.minimumUtilization(min)
+	// 					.maximumUtilization(max)
+	// 					.averageUtilization(avg)
+	// 					.build();
+	// 				hasDayData=true;
+	// 				result.add(newData);
+	// 			}
+	// 		}
+	//
+	// 		if (!hasDayData) {
+	// 			SearchDateResponse nonData = SearchDateResponse.builder()
+	// 				.dateTime(copyStartDate.format(queryDslExpressions.getDt()))
+	// 				.minimumUtilization(0.0)
+	// 				.maximumUtilization(0.0)
+	// 				.averageUtilization(0.0)
+	// 				.build();
+	// 			result.add(nonData);
+	// 		}
+	// 		copyStartDate = copyStartDate.plusDays(1);
+	// 	}
+	//
+	// 	return result;
+	// }
 
 }
 
@@ -200,4 +272,3 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 // query dsl 을 사용하면서 mysql 에서 제공하는 함수들을 사용하는게 한계가 있었다.
 
 // SQL Function 을 사용해야하는 경우가 있다. 그러기 위해서는 Expression 을 사용하면 sql function 을 사용할 수 있다.
-// https://zamezzz.tistory.com/317
