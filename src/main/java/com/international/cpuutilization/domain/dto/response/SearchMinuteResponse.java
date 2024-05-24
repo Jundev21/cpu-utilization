@@ -6,10 +6,12 @@ import lombok.Builder;
 
 @Builder
 public record SearchMinuteResponse(
-	String dateTime,
-	int minutes,
-	int currHours,
-	int currMinutes,
+	int year,
+	int month,
+	int day,
+	int hour,
+	int minute,
+	int countMinutes,
 	double cpuUtilization
 ) {
 }

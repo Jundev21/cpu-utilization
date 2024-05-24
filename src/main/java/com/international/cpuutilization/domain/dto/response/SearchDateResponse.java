@@ -4,7 +4,9 @@ import lombok.Builder;
 
 @Builder
 public record SearchDateResponse(
-	String dateTime,
+	int year,
+	int month,
+	int day,
 	double minimumUtilization,
 	double maximumUtilization,
 	double averageUtilization

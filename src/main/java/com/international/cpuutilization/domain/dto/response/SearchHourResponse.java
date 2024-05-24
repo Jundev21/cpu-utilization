@@ -7,9 +7,11 @@ import lombok.Builder;
 
 @Builder
 public record SearchHourResponse(
-	String dateTime,
-	int countHour,
-	int currentHour,
+	int year,
+	int month,
+	int day,
+	int hour,
+	int countHours,
 	double minimumUtilization,
 	double maximumUtilization,
 	double averageUtilization
