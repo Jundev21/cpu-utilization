@@ -1,5 +1,4 @@
 #spring.application.name=cpu-utilization
-
 spring:
   h2:
     console:
@@ -11,3 +10,16 @@ spring:
     username: sa
     password:
     driverClassName: org.h2.Driver
+    data-locations: classpath:dummyData.sql
+    initialization-mode: always
+
+  sql:
+    init:
+      data-locations: classpath*:dummyData.sql
+      mode: always
+      platform: h2
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
