@@ -5,7 +5,6 @@ import lombok.Builder;
 @Builder
 public record SearchDateResponse(
 	String dateTime,
-	int currentDay,
 	double minimumUtilization,
 	double maximumUtilization,
 	double averageUtilization
