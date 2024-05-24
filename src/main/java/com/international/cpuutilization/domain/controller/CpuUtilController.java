@@ -37,8 +37,8 @@ public class CpuUtilController {
 
 	@GetMapping("/hour")
 	public ResponseEntity<List<SearchHourResponse>> searchCpuUtilByHour(
-		@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-		LocalDateTime pickedDay
+		@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")
+		LocalDate pickedDay
 	) {
 		return ResponseEntity.ok(cpuUtilService.searchCpuUtilByDay(pickedDay));
 	}

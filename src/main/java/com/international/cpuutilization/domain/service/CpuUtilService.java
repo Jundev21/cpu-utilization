@@ -13,6 +13,7 @@ import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
 import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.entity.CpuUtilizationEntity;
+import com.international.cpuutilization.domain.entity.QCpuUtilizationEntity;
 import com.international.cpuutilization.domain.repository.CpuUtilizationRepository;
 import com.international.cpuutilization.util.CpuInfo;
 import com.querydsl.core.Tuple;
@@ -30,7 +31,7 @@ public class CpuUtilService {
 		return cpuUtilizationRepository.searchMinData(startDate, endDate);
 	}
 
-	public List<SearchHourResponse> searchCpuUtilByDay(LocalDateTime pickedDay) {
+	public List<SearchHourResponse> searchCpuUtilByDay(LocalDate pickedDay) {
 		return cpuUtilizationRepository.searchHourData(pickedDay);
 	}
 
