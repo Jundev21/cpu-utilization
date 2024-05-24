@@ -1,7 +1,7 @@
 package com.international.cpuutilization.domain.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +12,6 @@ import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.entity.QCpuUtilizationEntity;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -24,21 +22,17 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 
 	private final JPAQueryFactory jpaQueryFactory;
 	private final QCpuUtilizationEntity cpuEntity = QCpuUtilizationEntity.cpuUtilizationEntity;
-	private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH시 mm분");
+	private final QueryDslExpressions queryDslExpressions;
 
 	@Override
 	public List<SearchMinuteResponse> searchMinData(LocalDateTime startDate, LocalDateTime endDate) {
 
-		NumberTemplate<Integer> minutePath = Expressions.numberTemplate(Integer.class, "extract(minute from {0})",
-			cpuEntity.createdDate);
-		NumberTemplate<Integer> hourPath = Expressions.numberTemplate(Integer.class, "extract(hour from {0})",
-			cpuEntity.createdDate);
 		List<SearchMinuteResponse> result = new ArrayList<>();
 
 		List<Tuple> searchData = jpaQueryFactory.select(
 				cpuEntity.createdDate,
-				hourPath,
-				minutePath,
+				queryDslExpressions.getHourPath(),
+				queryDslExpressions.getMinutePath(),
 				cpuEntity.cpuUtilization
 			)
 			.from(cpuEntity)
@@ -48,12 +42,12 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 		for (int i = 0; i < 60; i++) {
 			boolean hasMinuteData = false;
 			for (Tuple tuple : searchData) {
-				Integer getMinute = tuple.get(minutePath);
+				Integer getMinute = tuple.get(queryDslExpressions.getMinutePath());
 				Double getCpuUtilization = tuple.get(cpuEntity.cpuUtilization);
 
 				if (getMinute != null && getCpuUtilization != null && getMinute == i) {
 					SearchMinuteResponse newData = SearchMinuteResponse.builder()
-						.dateTime(tuple.get(cpuEntity.createdDate).format(dtf))
+						.dateTime(tuple.get(cpuEntity.createdDate).format(queryDslExpressions.getDtf()))
 						.minutes(getMinute)
 						.currHours(getMinute)
 						.currMinutes(i)
@@ -78,51 +72,45 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 	}
 
 	@Override
-	public List<SearchHourResponse> searchHourData(LocalDateTime pickedDay) {
-
-		NumberTemplate<Integer> hourPath = Expressions.numberTemplate(Integer.class, "extract(hour from {0})",
-			cpuEntity.createdDate);
-
+	public List<SearchHourResponse> searchHourData(LocalDate pickedDay) {
 		List<SearchHourResponse> result = new ArrayList<>();
-
 		List<Tuple> subResult = jpaQueryFactory.select(
-				cpuEntity.createdDate,
-				hourPath,
+				queryDslExpressions.getHourPath(),
 				cpuEntity.cpuUtilization.min(),
 				cpuEntity.cpuUtilization.max(),
 				cpuEntity.cpuUtilization.avg()
 			)
 			.from(cpuEntity)
-			.where(cpuEntity.createdDate.eq(pickedDay))
-			.groupBy(hourPath)
-			.orderBy(hourPath.asc())
+			.where(queryDslExpressions.getDatePath().eq(pickedDay))
+			.groupBy(queryDslExpressions.getHourPath())
 			.fetch();
 
 		for (int i = 0; i < 24; i++) {
 			boolean hasHourData = false;
-
 			for (Tuple tuple : subResult) {
 				Double min = tuple.get(cpuEntity.cpuUtilization.min());
 				Double max = tuple.get(cpuEntity.cpuUtilization.max());
 				Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
-				Integer getHour = tuple.get(hourPath);
+				Integer getHour = tuple.get(queryDslExpressions.getHourPath());
 
 				if (min != null && max != null && avg != null && getHour != null && getHour == i) {
 					SearchHourResponse newData = SearchHourResponse.builder()
-						.dateTime(tuple.get(cpuEntity.createdDate).format(dtf))
+						.dateTime(pickedDay.format(queryDslExpressions.getDt()))
 						.currentHour(getHour)
+						.countHour(i)
 						.minimumUtilization(min)
 						.maximumUtilization(max)
 						.averageUtilization(avg)
 						.build();
-
+					hasHourData = true;
 					result.add(newData);
 				}
 			}
 			if (!hasHourData) {
 				SearchHourResponse nonData = SearchHourResponse.builder()
-					.dateTime("not exist")
+					.dateTime(pickedDay.format(queryDslExpressions.getDt()))
 					.currentHour(0)
+					.countHour(i)
 					.minimumUtilization(0.0)
 					.maximumUtilization(0.0)
 					.averageUtilization(0.0)
@@ -136,40 +124,62 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 	@Override
 	public List<SearchDateResponse> searchDateData(LocalDateTime startDate, LocalDateTime endDate) {
 
-		NumberTemplate<Integer> dayTemplate = Expressions.numberTemplate(Integer.class, "extract(day from {0})",
-			cpuEntity.createdDate);
-
 		List<SearchDateResponse> result = new ArrayList<>();
 
 		List<Tuple> searchData = jpaQueryFactory.select(
-				cpuEntity.createdDate,
-				dayTemplate,
+				queryDslExpressions.getYearPath(),
+				queryDslExpressions.getMonthPath(),
+				queryDslExpressions.getDayPath(),
 				cpuEntity.cpuUtilization.min(),
 				cpuEntity.cpuUtilization.max(),
 				cpuEntity.cpuUtilization.avg()
 			)
 			.from(cpuEntity)
 			.where(cpuEntity.createdDate.between(startDate, endDate))
-			.groupBy(dayTemplate)
+			.groupBy(queryDslExpressions.getYearPath(), queryDslExpressions.getMonthPath(),
+				queryDslExpressions.getDayPath())
 			.fetch();
 
-		for(Tuple tuple : searchData) {
-			Integer getDay = tuple.get(dayTemplate);
-			Double min = tuple.get(cpuEntity.cpuUtilization.min());
-			Double max = tuple.get(cpuEntity.cpuUtilization.max());
-			Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
+		LocalDate copyStartDate = startDate.toLocalDate();;
+		LocalDate copyEndDate = endDate.toLocalDate();;
 
-			if (getDay != null && min != null && max !=null && avg !=null) {
-				SearchDateResponse newData = SearchDateResponse.builder()
-					.dateTime(tuple.get(cpuEntity.createdDate).format(dtf))
-					.currentDay(getDay)
-					.minimumUtilization(min)
-					.maximumUtilization(max)
-					.averageUtilization(avg)
-					.build();
-				result.add(newData);
+		while (copyStartDate.compareTo(copyEndDate) < 1) {
+			boolean hasDayData = false;
+
+			for (Tuple tuple : searchData) {
+				Double min = tuple.get(cpuEntity.cpuUtilization.min());
+				Double max = tuple.get(cpuEntity.cpuUtilization.max());
+				Double avg = tuple.get(cpuEntity.cpuUtilization.avg());
+
+				LocalDate localDateFomatted = LocalDate.of(
+					tuple.get(queryDslExpressions.getYearPath()),
+					tuple.get(queryDslExpressions.getMonthPath()),
+					tuple.get(queryDslExpressions.getDayPath()));
+
+				if (min != null && max != null && avg != null && copyStartDate.isEqual(localDateFomatted)) {
+					SearchDateResponse newData = SearchDateResponse.builder()
+						.dateTime(localDateFomatted.format(queryDslExpressions.getDt()))
+						.minimumUtilization(min)
+						.maximumUtilization(max)
+						.averageUtilization(avg)
+						.build();
+					hasDayData=true;
+					result.add(newData);
+				}
 			}
+
+			if (!hasDayData) {
+				SearchDateResponse nonData = SearchDateResponse.builder()
+					.dateTime(copyStartDate.format(queryDslExpressions.getDt()))
+					.minimumUtilization(0.0)
+					.maximumUtilization(0.0)
+					.averageUtilization(0.0)
+					.build();
+				result.add(nonData);
+			}
+			copyStartDate = copyStartDate.plusDays(1);
 		}
+
 		return result;
 	}
 
@@ -188,3 +198,6 @@ public class CpuUtilizationQueryDslRepositoryImpl implements CpuUtilizationQuery
 // query dsl 사용 이유 jpa 는 jpql 을 주로 사용하지만 jpql 은 순수 스트링 형태로로 사용하기 때문에 타입이 언세이프 합니다.
 // 그래서 타입이 세이프하며 집계함수를 사용 하기 위해서 query dsl 을 사용하게 되었다.
 // query dsl 을 사용하면서 mysql 에서 제공하는 함수들을 사용하는게 한계가 있었다.
+
+// SQL Function 을 사용해야하는 경우가 있다. 그러기 위해서는 Expression 을 사용하면 sql function 을 사용할 수 있다.
+// https://zamezzz.tistory.com/317
