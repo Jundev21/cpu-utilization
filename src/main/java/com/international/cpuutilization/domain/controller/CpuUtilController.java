@@ -18,6 +18,7 @@ import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.service.CpuUtilService;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -29,9 +30,13 @@ public class CpuUtilController {
 
 	@GetMapping("/min")
 	public DataResponse<List<SearchMinuteResponse>> searchCpuUtilByMin(
-		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH")
+		@RequestParam
+		@NotNull(message = "체크인 날짜를 지정해야 합니다.")
+		@DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		LocalDateTime startDate,
-		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH")
+
+		@RequestParam
+		@DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		LocalDateTime endDate
 	) {
 		return DataResponse.responseBodyData(HttpStatus.OK, cpuUtilService.searchCpuUtilByMin(startDate, endDate));
@@ -39,7 +44,8 @@ public class CpuUtilController {
 
 	@GetMapping("/hour")
 	public DataResponse<List<SearchHourResponse>> searchCpuUtilByHour(
-		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
+		@RequestParam
+		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		LocalDate pickedDay
 	) {
 		return DataResponse.responseBodyData(HttpStatus.OK,cpuUtilService.searchCpuUtilByHour(pickedDay));
@@ -47,9 +53,11 @@ public class CpuUtilController {
 
 	@GetMapping("/day")
 	public DataResponse<List<SearchDateResponse>> searchCpuUtilByDays(
-		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
+		@RequestParam
+		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		LocalDate startDate,
-		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")
+		@RequestParam
+		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		LocalDate endDate
 	) {
 		return DataResponse.responseBodyData(HttpStatus.OK,cpuUtilService.searchCpuUilByDay(startDate, endDate));
