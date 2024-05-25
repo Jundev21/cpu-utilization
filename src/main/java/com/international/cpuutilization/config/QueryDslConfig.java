@@ -2,6 +2,8 @@ package com.international.cpuutilization.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.international.cpuutilization.common.QueryDslExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
@@ -15,4 +17,10 @@ public class QueryDslConfig {
 	public JPAQueryFactory jpaQueryFactory(){
 		return new JPAQueryFactory(entityManager);
 	}
+
+	@Bean
+	public QueryDslExpressions queryDslExpressions() {
+		return new QueryDslExpressions();
+	}
+
 }
