@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.international.cpuutilization.common.QueryDslExpressions;
 import com.international.cpuutilization.domain.dto.QueryDto.SearchDayQueryDto;
 import com.international.cpuutilization.domain.dto.QueryDto.SearchHourQueryDto;
 import com.international.cpuutilization.domain.dto.QueryDto.SearchMinuteQueryDto;

@@ -2,7 +2,6 @@ package com.international.cpuutilization.domain.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +17,7 @@ import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.entity.CpuUtilizationEntity;
 import com.international.cpuutilization.domain.repository.CpuUtilizationRepository;
+import com.international.cpuutilization.exception.ErrorCode;
 import com.international.cpuutilization.util.CpuInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +32,13 @@ public class CpuUtilService {
 	public List<SearchMinuteResponse> searchCpuUtilByMin(
 		LocalDateTime startDate, LocalDateTime endDate
 	) {
+
+		// 분 단위 API : 최근 1주 데이터 제공
+		LocalDate getPastDays = LocalDate.now().minusDays(8);
+		if (!startDate.toLocalDate().isAfter(getPastDays)) {
+			throw new RuntimeException(ErrorCode.LIMIT_MINUTES_ERROR.getErrorMessage());
+		}
+
 		List<SearchMinuteResponse> result = new ArrayList<>();
 		List<SearchMinuteQueryDto> getResults = cpuUtilizationRepository.searchMinData(startDate, endDate);
 		int startHour = startDate.getHour();
@@ -78,6 +85,13 @@ public class CpuUtilService {
 		List<SearchHourResponse> result = new ArrayList<>();
 		List<SearchHourQueryDto> getResults = cpuUtilizationRepository.searchHourData(pickedDay);
 
+		//시 단위 API : 최근 3달 데이터 제공
+		LocalDate getPastMonth = LocalDate.now().minusMonths(4);
+
+		if (!pickedDay.isAfter(getPastMonth)) {
+			throw new RuntimeException("최근 3달 데이터만 제공됩니다.");
+		}
+
 		for (int i = 0; i < 24; i++) {
 			boolean hasHourData = false;
 			for (SearchHourQueryDto searchHour : getResults) {
@@ -117,6 +131,13 @@ public class CpuUtilService {
 	public List<SearchDateResponse> searchCpuUilByDay(LocalDate startDate, LocalDate endDate) {
 		List<SearchDateResponse> result = new ArrayList<>();
 		List<SearchDayQueryDto> getResults = cpuUtilizationRepository.searchDateData(startDate, endDate);
+
+		//일 단위 API : 최근 1년 데이터 제공
+		LocalDate getPastYear = LocalDate.now().minusMonths(13);
+
+		if (!startDate.isAfter(getPastYear)) {
+			throw new RuntimeException("최근 1년 데이터만 제공됩니다.");
+		}
 
 		while (startDate.compareTo(endDate) < 1) {
 			boolean hasDayData = false;
