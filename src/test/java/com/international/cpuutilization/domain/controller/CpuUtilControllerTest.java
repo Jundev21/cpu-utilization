@@ -1,6 +1,5 @@
 package com.international.cpuutilization.domain.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -12,12 +11,10 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +22,6 @@ import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
 import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.service.CpuUtilService;
-
-//controller 테스트는 통합테스트로진행
 @SpringBootTest
 @AutoConfigureMockMvc
 class CpuUtilControllerTest {
@@ -83,6 +78,7 @@ class CpuUtilControllerTest {
 				.andExpect(jsonPath("$.data.[1].cpuUtilization").value(getData.get(1).cpuUtilization()));
 
 		}
+
 		@Test
 		@DisplayName("시작 날짜 형태(yyyy-MM-dd HH)가 올바르지 않는다.")
 		public void failStartDate() throws Exception {
@@ -91,7 +87,6 @@ class CpuUtilControllerTest {
 					.param("endDate", endDate))
 				.andExpect(status().isBadRequest());
 		}
-
 
 		@Test
 		@DisplayName("끝 날짜 형태(yyyy-MM-dd HH)가 올바르지 않는다.")
@@ -167,6 +162,7 @@ class CpuUtilControllerTest {
 				.andExpect(jsonPath("$.data.[1].averageUtilization").value(getData.get(1).averageUtilization()));
 
 		}
+
 		@Test
 		@DisplayName("선택 날짜 형태(yyyy-MM-dd)가 올바르지 않는다.")
 		public void failStartDate() throws Exception {
@@ -231,6 +227,7 @@ class CpuUtilControllerTest {
 				.andExpect(jsonPath("$.data.[1].averageUtilization").value(getData.get(1).averageUtilization()));
 
 		}
+
 		@Test
 		@DisplayName("시작 날짜 형태(yyyy-MM-dd HH)가 올바르지 않는다.")
 		public void failStartDate() throws Exception {
@@ -239,7 +236,6 @@ class CpuUtilControllerTest {
 					.param("endDate", endDate))
 				.andExpect(status().isBadRequest());
 		}
-
 
 		@Test
 		@DisplayName("끝 날짜 형태(yyyy-MM-dd)가 올바르지 않는다.")
