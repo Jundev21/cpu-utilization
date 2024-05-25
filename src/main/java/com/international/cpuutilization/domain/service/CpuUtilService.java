@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tomcat.util.bcel.Const;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +34,9 @@ public class CpuUtilService {
 		LocalDateTime startDate, LocalDateTime endDate
 	) {
 
+		final int eightDaysAgo = 7;
 		// 분 단위 API : 최근 1주 데이터 제공
-		LocalDate getPastDays = LocalDate.now().minusDays(8);
+		LocalDate getPastDays = LocalDate.now().minusDays(eightDaysAgo);
 		if (!startDate.toLocalDate().isAfter(getPastDays)) {
 			throw new RuntimeException(ErrorCode.LIMIT_MINUTES_ERROR.getErrorMessage());
 		}
@@ -84,9 +86,9 @@ public class CpuUtilService {
 	public List<SearchHourResponse> searchCpuUtilByHour(LocalDate pickedDay) {
 		List<SearchHourResponse> result = new ArrayList<>();
 		List<SearchHourQueryDto> getResults = cpuUtilizationRepository.searchHourData(pickedDay);
-
+		final int fourMonthAgo = 3;
 		//시 단위 API : 최근 3달 데이터 제공
-		LocalDate getPastMonth = LocalDate.now().minusMonths(4);
+		LocalDate getPastMonth = LocalDate.now().minusMonths(fourMonthAgo);
 
 		if (!pickedDay.isAfter(getPastMonth)) {
 			throw new RuntimeException("최근 3달 데이터만 제공됩니다.");
@@ -131,9 +133,9 @@ public class CpuUtilService {
 	public List<SearchDateResponse> searchCpuUilByDay(LocalDate startDate, LocalDate endDate) {
 		List<SearchDateResponse> result = new ArrayList<>();
 		List<SearchDayQueryDto> getResults = cpuUtilizationRepository.searchDateData(startDate, endDate);
-
+		final int oneYearAgo = 1;
 		//일 단위 API : 최근 1년 데이터 제공
-		LocalDate getPastYear = LocalDate.now().minusMonths(13);
+		LocalDate getPastYear = LocalDate.now().minusYears(oneYearAgo);
 
 		if (!startDate.isAfter(getPastYear)) {
 			throw new RuntimeException("최근 1년 데이터만 제공됩니다.");
