@@ -17,7 +17,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 	info = @Info(
 		title = "cpu-utilization Service",
 		description = "cpu-utilization API",
-		contact = @Contact(name = "김준래", email = "jundev21@gmail.com", url = "https://github.com/Jundev21/member-service")
+		contact = @Contact(name = "김준래", url = "https://github.com/Jundev21/cpu-utilization")
 	)
 )
 @Configuration

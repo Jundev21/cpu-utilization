@@ -26,4 +26,4 @@ spring:
 
 springdoc:
   swagger-ui:
-    path: /swagger-custom-ui.html
+    path: /swagger.html
