@@ -36,10 +36,11 @@
   - 예시 startDate = 2024-05-01 01 / endDate=2024-05-3 02 일때에 5월 1일 1시부터 5월 2일 3시까지의 모든 분단위 cpu 사용률 데이터 수집
   - front end 에 모든 데이터를 출력해야함으로 시간단위로 모든 분 0분부터 59분까지의 데이터를 퍼센테이지(%) 형태로 응답한다. 데이터가 없을경우에는 0% 로 출력
   - 예시: 1시부터 3시까지의 분단위 데이터를 조회하고 있을경우에는 데이터를 표시 만약 없는 데이터일경우 0으로 표시하여 모든 분단위를 출력한다.
-  ![Screenshot 2024-05-26 at 2.32.11 PM.png](..%2F..%2F..%2F..%2Fvar%2Ffolders%2Fzr%2F08by3snj28gbpsxs7rdlk0mw0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_GXRb0D%2FScreenshot%202024-05-26%20at%202.32.11%E2%80%AFPM.png)
-   
+    ![Screenshot 2024-05-26 at 3 13 31 PM](https://github.com/Jundev21/SNS-APP/assets/55421772/75ed5073-709a-4a4d-aa79-33d236f859bc)
 
-    
+
+
+
 
 
 - ##### 시 단위 조회: 지정한 날짜의 시 단위 CPU 최소/최대/평균 사용률을 조회합니다.
@@ -50,7 +51,8 @@
                 표기
 
   - 예시: 0시부터 23시까지의 분단위 데이터를 조회하여 최소값,최대값,평균값을 출력. 데이터가 있을경우에는 표시 만약 없는 데이터일경우 모두 0으로 표시하여 해당날짜의 모든 시단위를 출력한다.
-                ![Screenshot 2024-05-26 at 2.31.50 PM.png](..%2F..%2F..%2F..%2Fvar%2Ffolders%2Fzr%2F08by3snj28gbpsxs7rdlk0mw0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_2OMrL8%2FScreenshot%202024-05-26%20at%202.31.50%E2%80%AFPM.png)
+    ![Screenshot 2024-05-26 at 3 13 58 PM](https://github.com/Jundev21/SNS-APP/assets/55421772/bf1fa85d-6da6-4cea-8963-4de0257cc79b)
+
 
 
 
@@ -61,11 +63,11 @@
   - 예시 startDate = 2024-05-01 / endDate=2024-05-26 일때에 5월 1일 부터 5월 26일 의 cpu 사용률의 최소값,최대값,평균값 데이터를 수집합니다.
   - front end 에 모든 데이터를 출력해야함으로 날짜 구간의 모든 날짜의 데이터를 퍼센테이지(%) 형태로 응답합니다. 데이터가 없을 경우에는 모두 0.0 으로 표기
   - 예시: 5월 1일부터 5월 26일까지의 분단위 데이터를 조회하여 최소값,최대값,평균값을 출력. 데이터가 있을경우에는 표시 만약 없는 데이터일경우 0으로 표시하여 날짜 구간의 모든 날짜를 날짜 단위로 출력한다.
-  ![Screenshot 2024-05-26 at 2.39.39 PM.png](..%2F..%2F..%2F..%2Fvar%2Ffolders%2Fzr%2F08by3snj28gbpsxs7rdlk0mw0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_2zk59H%2FScreenshot%202024-05-26%20at%202.39.39%E2%80%AFPM.png)
+    ![Screenshot 2024-05-26 at 3 14 28 PM](https://github.com/Jundev21/SNS-APP/assets/55421772/2ba38e1b-bbb0-494d-84a7-f66403688f0e)
 
 
 
-
+    
 - ##### Swagger를 사용하여 API 문서화
   - http://localhost:8080//swagger.html 를 통하여 스웨거 접속
 
