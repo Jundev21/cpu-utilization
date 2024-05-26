@@ -50,7 +50,6 @@ class CpuUtilControllerTest {
 					.day(27)
 					.hour(2)
 					.minute(1)
-					.countMinutes(1)
 					.cpuUtilization(4.27)
 					.build()
 				,
@@ -60,7 +59,6 @@ class CpuUtilControllerTest {
 					.day(27)
 					.hour(5)
 					.minute(5)
-					.countMinutes(5)
 					.cpuUtilization(4.35)
 					.build()
 			);
@@ -129,7 +127,6 @@ class CpuUtilControllerTest {
 					.month(4)
 					.day(27)
 					.hour(2)
-					.countHours(1)
 					.minimumUtilization(4.27)
 					.maximumUtilization(40.27)
 					.averageUtilization(23.5)
@@ -140,7 +137,6 @@ class CpuUtilControllerTest {
 					.month(4)
 					.day(27)
 					.hour(2)
-					.countHours(2)
 					.minimumUtilization(5.27)
 					.maximumUtilization(55.27)
 					.averageUtilization(29.5)
