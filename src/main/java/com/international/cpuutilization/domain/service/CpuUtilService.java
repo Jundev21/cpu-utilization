@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tomcat.util.bcel.Const;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +17,7 @@ import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.entity.CpuUtilizationEntity;
 import com.international.cpuutilization.domain.repository.CpuUtilizationRepository;
+import com.international.cpuutilization.exception.BasicException;
 import com.international.cpuutilization.exception.ErrorCode;
 import com.international.cpuutilization.util.CpuInfo;
 
@@ -33,16 +33,28 @@ public class CpuUtilService {
 	public List<SearchMinuteResponse> searchCpuUtilByMin(
 		LocalDateTime startDate, LocalDateTime endDate
 	) {
-
-		final int eightDaysAgo = 7;
-		// 분 단위 API : 최근 1주 데이터 제공
-		LocalDate getPastDays = LocalDate.now().minusDays(eightDaysAgo);
-		if (!startDate.toLocalDate().isAfter(getPastDays)) {
-			throw new RuntimeException(ErrorCode.LIMIT_MINUTES_ERROR.getErrorMessage());
-		}
-
-		List<SearchMinuteResponse> result = new ArrayList<>();
+		isValidDateForMinute(startDate);
 		List<SearchMinuteQueryDto> getResults = cpuUtilizationRepository.searchMinData(startDate, endDate);
+		return getSearchMinuteResponses(startDate, endDate, getResults);
+	}
+
+	@Transactional(readOnly = true)
+	public List<SearchHourResponse> searchCpuUtilByHour(LocalDate pickedDay) {
+		isValidDateForHour(pickedDay);
+		List<SearchHourQueryDto> getResults = cpuUtilizationRepository.searchHourData(pickedDay);
+		return getSearchHourResponses(pickedDay, getResults);
+	}
+
+	@Transactional(readOnly = true)
+	public List<SearchDateResponse> searchCpuUilByDay(LocalDate startDate, LocalDate endDate) {
+		isValidDateForDay(startDate);
+		List<SearchDayQueryDto> getResults = cpuUtilizationRepository.searchDateData(startDate, endDate);
+		return getSearchDateResponses(startDate, endDate, getResults);
+	}
+
+	private List<SearchMinuteResponse> getSearchMinuteResponses(LocalDateTime startDate, LocalDateTime endDate,
+		List<SearchMinuteQueryDto> getResults) {
+		List<SearchMinuteResponse> result = new ArrayList<>();
 		int startHour = startDate.getHour();
 		int endHour = endDate.getHour();
 
@@ -82,18 +94,17 @@ public class CpuUtilService {
 		return result;
 	}
 
-	@Transactional(readOnly = true)
-	public List<SearchHourResponse> searchCpuUtilByHour(LocalDate pickedDay) {
-		List<SearchHourResponse> result = new ArrayList<>();
-		List<SearchHourQueryDto> getResults = cpuUtilizationRepository.searchHourData(pickedDay);
-		final int fourMonthAgo = 3;
-		//시 단위 API : 최근 3달 데이터 제공
-		LocalDate getPastMonth = LocalDate.now().minusMonths(fourMonthAgo);
-
-		if (!pickedDay.isAfter(getPastMonth)) {
-			throw new RuntimeException("최근 3달 데이터만 제공됩니다.");
+	private void isValidDateForMinute(LocalDateTime startDate) {
+		final int eightDaysAgo = 7;
+		// 분 단위 API : 최근 1주 데이터 제공
+		LocalDate getPastDays = LocalDate.now().minusDays(eightDaysAgo);
+		if (!startDate.toLocalDate().isAfter(getPastDays)) {
+			throw new BasicException(ErrorCode.LIMIT_MINUTES_ERROR, ErrorCode.LIMIT_MINUTES_ERROR.getErrorMessage());
 		}
+	}
 
+	private List<SearchHourResponse> getSearchHourResponses(LocalDate pickedDay, List<SearchHourQueryDto> getResults) {
+		List<SearchHourResponse> result = new ArrayList<>();
 		for (int i = 0; i < 24; i++) {
 			boolean hasHourData = false;
 			for (SearchHourQueryDto searchHour : getResults) {
@@ -129,18 +140,19 @@ public class CpuUtilService {
 		return result;
 	}
 
-	@Transactional(readOnly = true)
-	public List<SearchDateResponse> searchCpuUilByDay(LocalDate startDate, LocalDate endDate) {
-		List<SearchDateResponse> result = new ArrayList<>();
-		List<SearchDayQueryDto> getResults = cpuUtilizationRepository.searchDateData(startDate, endDate);
-		final int oneYearAgo = 1;
-		//일 단위 API : 최근 1년 데이터 제공
-		LocalDate getPastYear = LocalDate.now().minusYears(oneYearAgo);
+	private void isValidDateForHour(LocalDate pickedDay) {
+		final int fourMonthAgo = 3;
+		//시 단위 API : 최근 3달 데이터 제공
+		LocalDate getPastMonth = LocalDate.now().minusMonths(fourMonthAgo);
 
-		if (!startDate.isAfter(getPastYear)) {
-			throw new RuntimeException("최근 1년 데이터만 제공됩니다.");
+		if (!pickedDay.isAfter(getPastMonth)) {
+			throw new BasicException(ErrorCode.LIMIT_HOUR_ERROR, ErrorCode.LIMIT_HOUR_ERROR.getErrorMessage());
 		}
+	}
 
+	private List<SearchDateResponse> getSearchDateResponses(LocalDate startDate, LocalDate endDate,
+		List<SearchDayQueryDto> getResults) {
+		List<SearchDateResponse> result = new ArrayList<>();
 		while (startDate.compareTo(endDate) < 1) {
 			boolean hasDayData = false;
 			for (SearchDayQueryDto searchDay : getResults) {
@@ -172,6 +184,16 @@ public class CpuUtilService {
 			startDate = startDate.plusDays(1);
 		}
 		return result;
+	}
+
+	private void isValidDateForDay(LocalDate startDate) {
+		final int oneYearAgo = 1;
+		//일 단위 API : 최근 1년 데이터 제공
+		LocalDate getPastYear = LocalDate.now().minusYears(oneYearAgo);
+
+		if (!startDate.isAfter(getPastYear)) {
+			throw new BasicException(ErrorCode.LIMIT_DAY_ERROR, ErrorCode.LIMIT_DAY_ERROR.getErrorMessage());
+		}
 	}
 
 	private double mathFloorMethod(double averageValue) {
