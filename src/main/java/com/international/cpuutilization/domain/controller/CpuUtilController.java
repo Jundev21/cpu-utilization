@@ -30,14 +30,10 @@ public class CpuUtilController {
 
 	@GetMapping("/minute")
 	public DataResponse<List<SearchMinuteResponse>> searchCpuUtilByMin(
-
-		@NotNull(message = "시작 날짜를 지정해야 합니다.")
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		@RequestParam(name = "startDate")
 		LocalDateTime startDate,
 
-
-		@NotNull(message = "끝 날짜를 지정해야 합니다.")
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH")
 		@RequestParam(name = "endDate")
 		LocalDateTime endDate
@@ -47,7 +43,6 @@ public class CpuUtilController {
 
 	@GetMapping("/hour")
 	public DataResponse<List<SearchHourResponse>> searchCpuUtilByHour(
-		@NotNull(message = "날짜를 지정해야 합니다.")
 		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		@RequestParam(name = "pickedDay")
 		LocalDate pickedDay
@@ -57,13 +52,10 @@ public class CpuUtilController {
 
 	@GetMapping("/day")
 	public DataResponse<List<SearchDateResponse>> searchCpuUtilByDays(
-
-		@NotNull(message = "시작 날짜를 지정해야 합니다.")
 		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		@RequestParam(name = "startDate")
 		LocalDate startDate,
 
-		@NotNull(message = "끝 날짜를 지정해야 합니다.")
 		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		@RequestParam(name = "endDate")
 		LocalDate endDate

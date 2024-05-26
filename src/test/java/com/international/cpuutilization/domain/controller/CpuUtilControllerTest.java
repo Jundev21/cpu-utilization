@@ -1,5 +1,6 @@
 package com.international.cpuutilization.domain.controller;
 
+import static com.international.cpuutilization.exception.ErrorCode.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -22,6 +23,7 @@ import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
 import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.service.CpuUtilService;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class CpuUtilControllerTest {
@@ -85,7 +87,7 @@ class CpuUtilControllerTest {
 			mockMvc.perform(get("/api/cpu/minute")
 					.param("startDate", "2024-04-27")
 					.param("endDate", endDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value(DATE_FORMAT_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -94,7 +96,8 @@ class CpuUtilControllerTest {
 			mockMvc.perform(get("/api/cpu/minute")
 					.param("startDate", startDate)
 					.param("endDate", "2024-04-27"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error_message").value(DATE_FORMAT_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -102,7 +105,7 @@ class CpuUtilControllerTest {
 		public void missStartDate() throws Exception {
 			mockMvc.perform(get("/api/cpu/minute")
 					.param("endDate", endDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value("startDate " + MISS_PARAM_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -110,7 +113,7 @@ class CpuUtilControllerTest {
 		public void missEndDate() throws Exception {
 			mockMvc.perform(get("/api/cpu/minute")
 					.param("startDate", startDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value("endDate " + MISS_PARAM_ERROR.getErrorMessage()));
 		}
 
 	}
@@ -175,7 +178,7 @@ class CpuUtilControllerTest {
 		@DisplayName("선택 날짜를 입력하지 않았다.")
 		public void failEndDate() throws Exception {
 			mockMvc.perform(get("/api/cpu/hour"))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value("pickedDay " + MISS_PARAM_ERROR.getErrorMessage()));
 		}
 	}
 
@@ -234,7 +237,7 @@ class CpuUtilControllerTest {
 			mockMvc.perform(get("/api/cpu/day")
 					.param("startDate", "24-04-27")
 					.param("endDate", endDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value(DATE_FORMAT_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -243,7 +246,7 @@ class CpuUtilControllerTest {
 			mockMvc.perform(get("/api/cpu/day")
 					.param("startDate", startDate)
 					.param("endDate", "24-04-27"))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value(DATE_FORMAT_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -251,7 +254,7 @@ class CpuUtilControllerTest {
 		public void missStartDate() throws Exception {
 			mockMvc.perform(get("/api/cpu/day")
 					.param("endDate", endDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value("startDate " + MISS_PARAM_ERROR.getErrorMessage()));
 		}
 
 		@Test
@@ -259,7 +262,7 @@ class CpuUtilControllerTest {
 		public void missEndDate() throws Exception {
 			mockMvc.perform(get("/api/cpu/day")
 					.param("startDate", startDate))
-				.andExpect(status().isBadRequest());
+				.andExpect(jsonPath("$.error_message").value("endDate " + MISS_PARAM_ERROR.getErrorMessage()));
 		}
 
 	}
