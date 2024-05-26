@@ -33,7 +33,7 @@ public class CpuUtilService {
 	public List<SearchMinuteResponse> searchCpuUtilByMin(
 		LocalDateTime startDate, LocalDateTime endDate
 	) {
-		isValidDateForMinute(startDate);
+		isValidDateForMinute(startDate, endDate);
 		List<SearchMinuteQueryDto> getResults = cpuUtilizationRepository.searchMinData(startDate, endDate);
 		return getSearchMinuteResponses(startDate, endDate, getResults);
 	}
@@ -47,7 +47,7 @@ public class CpuUtilService {
 
 	@Transactional(readOnly = true)
 	public List<SearchDateResponse> searchCpuUilByDay(LocalDate startDate, LocalDate endDate) {
-		isValidDateForDay(startDate);
+		isValidDateForDay(startDate, endDate);
 		List<SearchDayQueryDto> getResults = cpuUtilizationRepository.searchDateData(startDate, endDate);
 		return getSearchDateResponses(startDate, endDate, getResults);
 	}
@@ -94,12 +94,16 @@ public class CpuUtilService {
 		return result;
 	}
 
-	private void isValidDateForMinute(LocalDateTime startDate) {
+	private void isValidDateForMinute(LocalDateTime startDate, LocalDateTime endDate) {
 		final int eightDaysAgo = 7;
 		// 분 단위 API : 최근 1주 데이터 제공
 		LocalDate getPastDays = LocalDate.now().minusDays(eightDaysAgo);
 		if (!startDate.toLocalDate().isAfter(getPastDays)) {
 			throw new BasicException(ErrorCode.LIMIT_MINUTES_ERROR, ErrorCode.LIMIT_MINUTES_ERROR.getErrorMessage());
+		}
+		//시작날짜가 종료날짜보다 앞서있는경우
+		if (startDate.isAfter(endDate)) {
+			throw new BasicException(ErrorCode.INVALID_DATE, ErrorCode.INVALID_DATE.getErrorMessage());
 		}
 	}
 
@@ -186,13 +190,18 @@ public class CpuUtilService {
 		return result;
 	}
 
-	private void isValidDateForDay(LocalDate startDate) {
+	private void isValidDateForDay(LocalDate startDate, LocalDate endDate) {
 		final int oneYearAgo = 1;
 		//일 단위 API : 최근 1년 데이터 제공
 		LocalDate getPastYear = LocalDate.now().minusYears(oneYearAgo);
 
 		if (!startDate.isAfter(getPastYear)) {
 			throw new BasicException(ErrorCode.LIMIT_DAY_ERROR, ErrorCode.LIMIT_DAY_ERROR.getErrorMessage());
+		}
+
+		//시작날짜가 종료날짜보다 앞서있는경우
+		if (startDate.isAfter(endDate)) {
+			throw new BasicException(ErrorCode.INVALID_DATE, ErrorCode.INVALID_DATE.getErrorMessage());
 		}
 	}
 
