@@ -1,5 +1,6 @@
 package com.international.cpuutilization.domain.service;
 
+import static com.international.cpuutilization.exception.ErrorCode.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -22,6 +23,7 @@ import com.international.cpuutilization.domain.dto.response.SearchDateResponse;
 import com.international.cpuutilization.domain.dto.response.SearchHourResponse;
 import com.international.cpuutilization.domain.dto.response.SearchMinuteResponse;
 import com.international.cpuutilization.domain.repository.CpuUtilizationRepository;
+import com.international.cpuutilization.exception.BasicException;
 
 @SpringBootTest
 class CpuUtilServiceTest {
@@ -98,7 +100,26 @@ class CpuUtilServiceTest {
 			LocalDateTime endDate = LocalDateTime.of(2024, 5, 23, 2, 0);
 
 			//when,then
-			assertThrows(RuntimeException.class, () -> cpuUtilService.searchCpuUtilByMin(pastStartDate, endDate));
+			//when,then
+			BasicException basicException =
+				assertThrows(BasicException.class, () -> cpuUtilService.searchCpuUtilByMin(pastStartDate, endDate));
+
+			assertEquals(LIMIT_MINUTES_ERROR.getErrorMessage(), basicException.getMessage());
+		}
+
+		@Test
+		@DisplayName("시작날짜와 종료날짜 기간이 올바르지 않을 경우")
+		public void invalidFilterDate() throws Exception {
+
+			//given
+			LocalDateTime startDate = LocalDateTime.of(2024, 6, 23, 2, 0);
+			LocalDateTime endDate = LocalDateTime.of(2024, 5, 23, 2, 0);
+
+			//when,then
+			BasicException basicException =
+				assertThrows(BasicException.class, () -> cpuUtilService.searchCpuUtilByMin(startDate, endDate));
+
+			assertEquals(INVALID_DATE.getErrorMessage(), basicException.getMessage());
 		}
 
 	}
@@ -158,7 +179,10 @@ class CpuUtilServiceTest {
 			LocalDate pickedDateMenu = LocalDate.of(2024, 2, 1);
 
 			//when,then
-			assertThrows(RuntimeException.class, () -> cpuUtilService.searchCpuUtilByHour(pickedDateMenu));
+			BasicException basicException =
+				assertThrows(BasicException.class, () -> cpuUtilService.searchCpuUtilByHour(pickedDateMenu));
+
+			assertEquals(LIMIT_HOUR_ERROR.getErrorMessage(), basicException.getMessage());
 		}
 
 	}
@@ -223,7 +247,26 @@ class CpuUtilServiceTest {
 			LocalDate endDate = LocalDate.of(2024, 5, 23);
 
 			//when,then
-			assertThrows(RuntimeException.class, () -> cpuUtilService.searchCpuUilByDay(startDate, endDate));
+			BasicException basicException =
+				assertThrows(BasicException.class, () -> cpuUtilService.searchCpuUilByDay(startDate, endDate));
+
+			assertEquals(LIMIT_DAY_ERROR.getErrorMessage(), basicException.getMessage());
+		}
+
+		@Test
+		@DisplayName("시작날짜와 종료날짜 기간이 올바르지 않을 경우")
+		public void invalidFilterDate() throws Exception {
+
+			//given
+			LocalDate startDate = LocalDate.of(2024, 6, 23);
+			LocalDate endDate = LocalDate.of(2024, 5, 23);
+
+			//when,then
+			BasicException basicException =
+				assertThrows(BasicException.class, () -> cpuUtilService.searchCpuUilByDay(startDate, endDate));
+
+			assertEquals(INVALID_DATE.getErrorMessage(), basicException.getMessage());
+
 		}
 
 	}
