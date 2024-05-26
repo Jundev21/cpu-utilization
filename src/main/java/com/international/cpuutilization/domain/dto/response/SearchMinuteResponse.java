@@ -11,7 +11,6 @@ public record SearchMinuteResponse(
 	int day,
 	int hour,
 	int minute,
-	int countMinutes,
 	double cpuUtilization
 ) {
 }

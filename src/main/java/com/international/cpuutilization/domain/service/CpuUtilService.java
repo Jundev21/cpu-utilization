@@ -2,6 +2,7 @@ package com.international.cpuutilization.domain.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,6 @@ public class CpuUtilService {
 							.day(searchMinute.getDay())
 							.hour(searchMinute.getHour())
 							.minute(searchMinute.getMinute())
-							.countMinutes(j)
 							.cpuUtilization(searchMinute.getCpuUtilization())
 							.build();
 						hasMinuteData = true;
@@ -83,7 +83,6 @@ public class CpuUtilService {
 						.day(startDate.getDayOfMonth())
 						.hour(i)
 						.minute(j)
-						.countMinutes(j)
 						.cpuUtilization(0.0)
 						.build();
 					result.add(newData);
@@ -118,7 +117,6 @@ public class CpuUtilService {
 						.month(searchHour.getMonth())
 						.day(searchHour.getDay())
 						.hour(searchHour.getHour())
-						.countHours(i)
 						.minimumUtilization(searchHour.getMin())
 						.maximumUtilization(searchHour.getMax())
 						.averageUtilization(mathFloorMethod(searchHour.getAvg()))
@@ -133,7 +131,6 @@ public class CpuUtilService {
 					.month(pickedDay.getMonthValue())
 					.day(pickedDay.getDayOfMonth())
 					.hour(i)
-					.countHours(i)
 					.minimumUtilization(0.0)
 					.maximumUtilization(0.0)
 					.averageUtilization(0.0)
@@ -206,13 +203,16 @@ public class CpuUtilService {
 	}
 
 	private double mathFloorMethod(double averageValue) {
-		return Math.floor(averageValue * 1000) / 1000;
+		return Math.floor(averageValue * 100) / 100.0;
 	}
 
 	@Transactional
 	@Scheduled(fixedDelay = 60000)
 	protected void saveCpuInfo() {
-		CpuUtilizationEntity newCpuInfo = new CpuUtilizationEntity(cpuInfo.getCpuUsage(), LocalDateTime.now());
+
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+		LocalDateTime localDateTime = LocalDateTime.parse(LocalDateTime.now().format(dateTimeFormatter));
+		CpuUtilizationEntity newCpuInfo = new CpuUtilizationEntity(cpuInfo.getCpuUsage(), localDateTime);
 		cpuUtilizationRepository.save(newCpuInfo);
 	}
 }

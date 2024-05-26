@@ -13,11 +13,16 @@ public class CpuInfo {
 	//	시스템의 CPU 상태 확인
 	// 0 일 경우는 사요량이 0 이고 100 일경우는 1로 나타낸다. 따라서
 	// cpu 사용량은 퍼센테이지로 나타내기 때문에 *100 을 해서 퍼센테이지로 나타낸다
+	// public double getCpuUsage() {
+	// 	return Math.floor(this.operatingSystemMXBean.getCpuLoad()*1000)/1000;
+	// }
+
 	public double getCpuUsage() {
-		return Math.floor(this.operatingSystemMXBean.getCpuLoad()*1000)/1000;
+		double convertPercent = this.operatingSystemMXBean.getCpuLoad()*100;
+		return Math.floor(convertPercent*100)/100.0;
 	}
 	public double getJvmUsage() {
-		return Math.floor(this.operatingSystemMXBean.getProcessCpuLoad()*1000)/1000;
+		return Math.floor(this.operatingSystemMXBean.getProcessCpuLoad()*100)/100;
 	}
 	public double getFreeMemorySpace() {
 		return (double)this.operatingSystemMXBean.getFreeMemorySize();

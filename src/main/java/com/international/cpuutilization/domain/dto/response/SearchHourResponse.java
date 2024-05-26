@@ -11,7 +11,6 @@ public record SearchHourResponse(
 	int month,
 	int day,
 	int hour,
-	int countHours,
 	double minimumUtilization,
 	double maximumUtilization,
 	double averageUtilization
